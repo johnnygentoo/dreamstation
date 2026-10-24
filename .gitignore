@@ -1,0 +1,33 @@
+# Build output
+/build*/
+/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+*.o
+*.a
+*.so
+
+# AppImage work and results
+/packaging/appimage/work/
+*.AppImage
+
+# Editors and caches
+.cache/
+.vscode/
+.idea/
+*.swp
+
+# Never commit firmware, games or saves
+/bios/
+*.gdi
+*.cdi
+*.chd
+*.cue
+*.bin
+*.zip
+*.vmu
+*.vms
+
+# Logs
+*.log

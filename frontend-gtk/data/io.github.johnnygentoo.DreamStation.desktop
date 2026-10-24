@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=DreamStation
+GenericName=Dreamcast Emulator
+Comment=Play Sega Dreamcast, Naomi and Atomiswave games
+Exec=dreamstation %f
+Icon=io.github.johnnygentoo.DreamStation
+Terminal=false
+Categories=Game;Emulator;
+Keywords=dreamcast;naomi;atomiswave;sega;emulator;
+MimeType=application/x-cd-image;
+StartupWMClass=io.github.johnnygentoo.DreamStation

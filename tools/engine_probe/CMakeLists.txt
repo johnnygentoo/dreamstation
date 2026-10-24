@@ -1,0 +1,5 @@
+pkg_check_modules(EPOXY_PROBE REQUIRED IMPORTED_TARGET epoxy)
+add_executable(engine_probe main.cpp)
+target_include_directories(engine_probe PRIVATE ${CMAKE_SOURCE_DIR}/engine/flycast/core/deps/stb)
+target_link_libraries(engine_probe PRIVATE ds::engine PkgConfig::EPOXY_PROBE)
+target_link_options(engine_probe PRIVATE -rdynamic)

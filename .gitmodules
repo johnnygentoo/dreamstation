@@ -1,0 +1,4 @@
+[submodule "engine/flycast"]
+	path = engine/flycast
+	url = https://github.com/Johnnygentoo/flycast.git
+	branch = dreamstation

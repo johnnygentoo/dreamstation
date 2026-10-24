@@ -1,0 +1,623 @@
+/*
+ * DreamStation — JohnnyCyan theme
+ * Cyan #15F4EE on navy #1E2E3E, dark header #091018
+ *
+ * Font policy:
+ *   .ds-pixel-font   → "Press Start 2P" (headings, labels, status)
+ *   .ds-readable-font → system sans-serif (body text, descriptions, tooltips)
+ *   All body text defaults to system sans (no global font-family override).
+ */
+
+/* ── Colour palette overrides for libadwaita ────────────────────────────── */
+
+@define-color accent_color          #15F4EE;
+@define-color accent_bg_color       #15F4EE;
+@define-color accent_fg_color       #091018;
+
+@define-color window_bg_color       #1E2E3E;
+@define-color window_fg_color       #15F4EE;
+
+@define-color headerbar_bg_color    #091018;
+@define-color headerbar_fg_color    #15F4EE;
+@define-color headerbar_border_color #15F4EE22;
+@define-color headerbar_backdrop_color #091018;
+@define-color headerbar_shade_color #00000066;
+
+@define-color sidebar_bg_color      #162330;
+@define-color card_bg_color         #162330;
+@define-color card_fg_color         #15F4EE;
+@define-color card_shade_color      #00000033;
+
+@define-color popover_bg_color      #162330;
+@define-color popover_fg_color      #15F4EE;
+
+@define-color view_bg_color         #1E2E3E;
+@define-color view_fg_color         #15F4EE;
+
+@define-color thumbnail_bg_color    #091018;
+@define-color thumbnail_fg_color    #15F4EE;
+
+@define-color success_color         #57E389;
+@define-color success_bg_color      #26A269;
+@define-color success_fg_color      #091018;
+
+@define-color warning_color         #FFD373;
+@define-color warning_bg_color      #9C6E03;
+@define-color warning_fg_color      #091018;
+
+@define-color error_color           #FF7B7B;
+@define-color error_bg_color        #C01C28;
+@define-color error_fg_color        #15F4EE;
+
+/* ── Font utility classes ────────────────────────────────────────────────── */
+
+/* Use for: header title, menu button labels, game tile titles, status bar */
+.ds-pixel-font {
+    font-family: "Press Start 2P", "Joystix", monospace;
+}
+
+/* Use for: all body text, descriptions, row content, tooltips, dialogs */
+.ds-readable-font {
+    font-family: -gtk-system-font, sans-serif;
+}
+
+/* ── Header bar ─────────────────────────────────────────────────────────── */
+
+headerbar {
+    background-color: #091018;
+    color:            #15F4EE;
+    border-bottom:    1px solid #15F4EE22;
+    min-height:       48px;
+}
+
+headerbar > * {
+    margin-left:  4px;
+    margin-right: 4px;
+}
+
+headerbar button {
+    color:         #15F4EE;
+    padding:       8px 10px;
+    border-radius: 6px;
+}
+
+headerbar button:hover {
+    color:            #15F4EE;
+    background-color: #15F4EE18;
+}
+
+/* Labeled menu buttons in the header bar */
+.ds-header-menu-btn {
+    font-family:   "Press Start 2P", monospace;
+    font-size:     0.7em;
+    color:         #15F4EE;
+    padding:       8px 12px;
+    border-radius: 6px;
+}
+
+.ds-header-menu-btn:hover,
+.ds-header-menu-btn:active,
+.ds-header-menu-btn:checked {
+    color:            #15F4EE;
+    background-color: #15F4EE18;
+}
+
+/* Window title */
+headerbar windowtitle .title {
+    font-family: "Press Start 2P", monospace;
+    font-size:   0.75em;
+}
+
+headerbar windowtitle .subtitle {
+    font-family: -gtk-system-font, sans-serif;
+    font-size:   0.75em;
+    color:       #15F4EEB0;
+}
+
+/* ── View switcher in header ────────────────────────────────────────────── */
+
+viewswitcher button {
+    font-family: "Press Start 2P", monospace;
+    font-size:   0.6em;
+    padding:     8px 16px;
+}
+
+viewswitcher button:checked {
+    color:         #15F4EE;
+    border-bottom: 2px solid #15F4EE;
+}
+
+/* ── Popover menus ──────────────────────────────────────────────────────── */
+
+popover.menu {
+    background-color: #162330;
+    border:           1px solid #15F4EE22;
+    border-radius:    8px;
+}
+
+popover.menu modelbutton {
+    padding:       10px 20px;
+    color:         #15F4EE;
+    font-family:   -gtk-system-font, sans-serif;
+    font-size:     0.9em;
+    border-radius: 4px;
+}
+
+popover.menu modelbutton:hover {
+    background-color: #15F4EE18;
+    color:            #15F4EE;
+}
+
+popover.menu modelbutton accelerator {
+    color: #15F4EEB0;
+}
+
+/* Separator inside menus */
+popover.menu separator {
+    background-color: #15F4EE18;
+    margin:           4px 12px;
+}
+
+/* ── Toolbar (ActionBar) ────────────────────────────────────────────────── */
+
+actionbar {
+    background-color: #0F1C2A;
+    border-bottom:    1px solid #15F4EE18;
+    min-height:       44px;
+}
+
+actionbar button {
+    color:         #15F4EE;
+    padding:       10px 12px;
+    margin:        0 3px;
+    border-radius: 6px;
+}
+
+actionbar button:hover {
+    color:            #15F4EE;
+    background-color: #15F4EE14;
+}
+
+/* ── Status bar ─────────────────────────────────────────────────────────── */
+
+.status-bar {
+    background-color: #091018;
+    border-top:       1px solid #15F4EE18;
+    color:            #15F4EEB0;
+    font-family:      "Press Start 2P", monospace;
+    font-size:        0.6em;
+    padding-left:     24px;
+    padding-right:    24px;
+    padding-top:      8px;
+    padding-bottom:   8px;
+    min-height:       28px;
+}
+
+/* ── Preferences window ─────────────────────────────────────────────────── */
+/*
+ * libadwaita 1.7.9 CSS node reference (extracted from binary UI templates):
+ *   preferencesgroup
+ *     box
+ *       box.header          ← group header container
+ *         box.labels
+ *           label.heading.h4  ← group TITLE  (NOT label.title)
+ *           label.dimmed      ← group DESC   (NOT label.description)
+ *       list.boxed-list
+ *         row.action-row
+ *           box.header       ← row content box
+ *             box.prefixes
+ *             image.icon
+ *             box.title      ← title+subtitle container
+ *               label.title
+ *               label.subtitle
+ *             box.suffixes
+ */
+
+/* Base font for preferences content — system sans, not pixel font */
+preferenceswindow,
+preferencespage,
+preferencesgroup,
+row.action-row {
+    font-family: -gtk-system-font, sans-serif;
+}
+
+preferenceswindow .navigation-sidebar {
+    background-color: #0F1C2A;
+}
+
+/* Group header spacing — targets the header box, not a label */
+preferencesgroup > box > box.header {
+    margin-top:    24px;
+    margin-bottom: 8px;
+}
+
+/* Group title: libadwaita uses .heading.h4, not .title */
+preferencesgroup .heading {
+    font-family: -gtk-system-font, sans-serif;
+    font-weight: 700;
+    font-size:   0.95em;
+    color:       #15F4EE;
+}
+
+/* Group description: libadwaita uses .dimmed, not .description */
+preferencesgroup .dimmed {
+    font-family: -gtk-system-font, sans-serif;
+    font-size:   0.85em;
+    color:       #15F4EEB0;
+    line-height: 1.4;
+}
+
+/* ActionRow minimum height */
+row.action-row {
+    min-height: 56px;
+}
+
+/* ActionRow padding goes on box.header (the content box), not the outer row */
+row.action-row > box.header {
+    padding:    12px 16px;
+    min-height: 52px;
+}
+
+/* Row title text */
+row.action-row label.title {
+    font-family: -gtk-system-font, sans-serif;
+    font-size:   0.95em;
+    color:       #15F4EE;
+}
+
+/* Row subtitle text */
+row.action-row label.subtitle {
+    font-family: -gtk-system-font, sans-serif;
+    font-size:   0.8em;
+    color:       #15F4EEB0;
+    line-height: 1.4;
+}
+
+/* Dialog buttons */
+dialog button {
+    padding:       10px 20px;
+    margin:        0 8px;
+    border-radius: 6px;
+}
+
+/* ── Game library tiles ─────────────────────────────────────────────────── */
+
+flowbox {
+    padding: 8px;
+}
+
+flowboxchild {
+    padding: 0;
+    margin:  10px;
+}
+
+.ds-game-tile {
+    background-color: #162330;
+    border-radius:    8px;
+    padding:          10px;
+    border:           1px solid #15F4EE22;
+    transition:       border-color 150ms ease, background-color 150ms ease;
+}
+
+.ds-game-tile:hover {
+    background-color: #1D2F42;
+    border-color:     #15F4EE88;
+}
+
+flowboxchild:selected .ds-game-tile {
+    border-color:     #15F4EE;
+    background-color: #15F4EE18;
+    box-shadow:       0 0 0 2px #15F4EE44;
+}
+
+/* Unsupported / greyed-out tiles */
+.ds-game-tile.unsupported {
+    opacity: 0.45;
+}
+
+/* ── Game title label ────────────────────────────────────────────────────── */
+
+.ds-game-title-label {
+    font-family: -gtk-system-font, sans-serif;
+    font-weight: 600;
+    font-size:   0.95em;
+    color:       #15F4EE;
+    margin-top:  8px;
+}
+
+/* Game metadata (region, year) — readable font */
+.ds-game-meta-label {
+    font-family: -gtk-system-font, sans-serif;
+    font-size:   0.8em;
+    color:       #15F4EEB0;
+}
+
+/* System badge (tile and list) — Dreamcast keeps the theme cyan, arcade
+   boards get warm colours so the two families read apart at a glance. */
+.ds-system-pill {
+    font-family:      -gtk-system-font, sans-serif;
+    font-size:        0.7em;
+    font-weight:      700;
+    letter-spacing:   0.06em;
+    padding:          1px 8px;
+    margin-top:       4px;
+    border-radius:    999px;
+    border:           1px solid currentColor;
+}
+.ds-system-dreamcast  { color: #15F4EE; background-color: #15F4EE14; }
+.ds-system-naomi      { color: #FFB454; background-color: #FFB45418; }
+.ds-system-naomi2     { color: #FF8A5C; background-color: #FF8A5C18; }
+.ds-system-atomiswave { color: #FF6FA8; background-color: #FF6FA818; }
+.ds-system-systemsp   { color: #C9A7FF; background-color: #C9A7FF18; }
+
+/* ── Accent / link colour ───────────────────────────────────────────────── */
+
+link {
+    color: #15F4EE;
+}
+
+/* ── FlowBox / ScrolledWindow background ────────────────────────────────── */
+
+scrolledwindow > viewport {
+    background-color: #1E2E3E;
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+
+toast {
+    background-color: #091018;
+    color:            #15F4EE;
+    border:           1px solid #15F4EE44;
+    font-family:      -gtk-system-font, sans-serif;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+button.suggested-action {
+    background-color: #15F4EE;
+    color:            #091018;
+}
+
+button.suggested-action:hover {
+    background-color: #42F7F1;
+}
+
+button.destructive-action {
+    background-color: #C01C28;
+    color:            #15F4EE;
+}
+
+/* ── Tooltips ───────────────────────────────────────────────────────────── */
+
+tooltip {
+    background-color: #091018;
+    color:            #15F4EE;
+    border:           1px solid #15F4EE22;
+    font-family:      -gtk-system-font, sans-serif;
+    font-size:        0.85em;
+    padding:          6px 10px;
+}
+
+/* ── About window / generic dialog body ─────────────────────────────────── */
+
+window.about,
+dialog {
+    font-family: -gtk-system-font, sans-serif;
+}
+
+/* ── On-screen display: corner FPS counter over the render surface ───────── */
+/* DuckStation-style: a compact, unobtrusive pill in the top-right corner. */
+.osd-fps {
+    background-color: rgba(9, 16, 24, 0.72);
+    color:            #15F4EE;
+    border:           1px solid #15F4EE44;
+    border-radius:    8px;
+    padding:          3px 10px;
+    font-family:      "Press Start 2P", monospace;
+    font-size:        0.72em;
+    letter-spacing:   0.5px;
+}
+
+/* ── Settings window (DuckStation-shaped) ───────────────────────────────── */
+/* Explicit sizes and borders: under a custom GTK theme, rows, switches and
+ * drop-downs otherwise collapse to bare text. */
+
+.ds-settings .navigation-sidebar {
+    background-color: #0F1C2A;
+}
+
+.ds-settings .navigation-sidebar row {
+    min-height: 40px;
+    padding:    2px 6px;
+}
+
+.ds-settings list.boxed-list {
+    background-color: #162330;
+    border:           1px solid #15F4EE44;
+    border-radius:    8px;
+}
+
+.ds-settings list.boxed-list > row {
+    min-height:    46px;
+    padding:       4px 14px;
+    border-bottom: 1px solid #15F4EE18;
+}
+
+.ds-settings list.boxed-list > row:last-child {
+    border-bottom: none;
+}
+
+.ds-settings list.boxed-list > row:hover {
+    background-color: #15F4EE10;
+}
+
+.ds-settings .heading {
+    color:       #15F4EE;
+    font-weight: 700;
+}
+
+.ds-settings switch {
+    min-width:        46px;
+    min-height:       24px;
+    border:           1px solid #15F4EE;
+    border-radius:    13px;
+    background-color: #091018;
+}
+
+.ds-settings switch:checked {
+    background-color: #15F4EE66;
+}
+
+.ds-settings switch > slider {
+    min-width:        20px;
+    min-height:       20px;
+    margin:           1px;
+    border-radius:    50%;
+    background-color: #15F4EE;
+}
+
+.ds-settings dropdown > button,
+.ds-settings button {
+    border:        1px solid #15F4EE66;
+    border-radius: 5px;
+    padding:       6px 12px;
+    min-height:    22px;
+}
+
+.ds-settings dropdown > button {
+    min-width: 200px;
+}
+
+.ds-settings button:hover,
+.ds-settings dropdown > button:hover {
+    background-color: #15F4EE;
+    color:            #000000;
+}
+
+.ds-settings-help {
+    background-color: #091018;
+    border:           1px solid #15F4EE22;
+    border-radius:    8px;
+    padding:          10px 14px;
+}
+
+/* ── Game list: table view and header strip ─────────────────────────────── */
+
+columnview.ds-game-table > listview > row {
+    min-height: 34px;
+    border-bottom: 1px solid #15F4EE14;
+}
+
+columnview.ds-game-table > listview > row:hover {
+    background-color: #15F4EE14;
+}
+
+columnview.ds-game-table > listview > row > cell {
+    padding: 8px 6px;
+}
+
+columnview.ds-game-table > header > button {
+    padding:       8px 8px;
+    border-bottom: 1px solid #15F4EE66;
+    font-weight:   700;
+}
+
+.ds-library-header button,
+.ds-library-header dropdown > button,
+.ds-library-header entry {
+    min-height:    30px;
+    padding:       2px 10px;
+    border:        1px solid #15F4EE44;
+    border-radius: 5px;
+}
+
+.ds-library-header button:checked {
+    background-color: #15F4EE;
+    color:            #000000;
+}
+
+/* Sliders: give the trough and knob real size and colour. */
+.ds-settings scale trough,
+.ds-library-header scale trough {
+    min-height:       6px;
+    min-width:        60px;
+    border-radius:    3px;
+    background-color: #2A4A5A;
+}
+
+.ds-settings scale highlight,
+.ds-library-header scale highlight {
+    min-height:       6px;
+    border-radius:    3px;
+    background-color: #15F4EE;
+}
+
+.ds-settings scale slider,
+.ds-library-header scale slider {
+    min-width:        16px;
+    min-height:       16px;
+    margin:           -6px;
+    border-radius:    50%;
+    border:           2px solid #15F4EE;
+    background-color: #091018;
+}
+
+/* ── In-game pause menu ─────────────────────────────────────────────────── */
+
+.ds-pause-menu {
+    background-color: rgba(9, 16, 24, 0.86);
+}
+
+.ds-pause-title {
+    font-size:   1.6em;
+    font-weight: 700;
+    color:       #15F4EE;
+}
+
+.ds-pause-button {
+    min-height:       44px;
+    padding:          6px 18px;
+    border:           1px solid #15F4EE44;
+    border-radius:    6px;
+    background-color: rgba(30, 46, 62, 0.85);
+}
+
+.ds-pause-slot {
+    padding:          6px;
+    border:           1px solid #15F4EE44;
+    border-radius:    6px;
+    background-color: rgba(30, 46, 62, 0.85);
+}
+
+.ds-pause-button:focus,
+.ds-pause-button:hover,
+.ds-pause-slot:focus,
+.ds-pause-slot:hover {
+    background-color: #15F4EE;
+    color:            #000000;
+    border-color:     #15F4EE;
+}
+
+.ds-pause-button:disabled,
+.ds-pause-slot:disabled {
+    opacity: 0.4;
+}
+
+/* ── On-screen display ──────────────────────────────────────────────────── */
+
+.ds-osd-message,
+.ds-osd-panel {
+    background-color: rgba(9, 16, 24, 0.80);
+    border:           1px solid #15F4EE55;
+    border-radius:    6px;
+    padding:          6px 12px;
+    color:            #15F4EE;
+}
+
+.ds-osd-panel label {
+    color: #15F4EE;
+}
+
+.ds-osd-title {
+    font-weight: 700;
+}

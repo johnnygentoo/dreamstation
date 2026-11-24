@@ -22,6 +22,10 @@ struct Config;
 std::vector<std::filesystem::path> cover_dirs();
 std::filesystem::path find_cover(const GameEntry& game,
                                  const std::vector<std::filesystem::path>& dirs);
+// The art the game grid shows for a game, empty if none. With `box`, a
+// picture of the whole box in 3D (ES-DE's "3dboxes") where there is one,
+// else the flat cover.
+std::filesystem::path find_art(const GameEntry& game, bool box);
 // Index of the cover name (a file name without extension) that best fits a
 // game's title, or -1. Spelling, punctuation and bracketed notes such as
 // "(Rev A)" or "(USA)" are ignored, as covers from different sources name
@@ -84,6 +88,7 @@ private:
     Gtk::DropDown     m_sort;
     Gtk::ToggleButton m_desc_btn;
     Gtk::Scale        m_scale{Gtk::Orientation::HORIZONTAL};
+    sigc::connection  m_scale_settle;     // the size, once a drag stops
     Gtk::SearchEntry  m_search_entry;
     Gtk::Label        m_count;
 

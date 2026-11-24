@@ -33,7 +33,8 @@ public:
     CoverCache(const CoverCache&) = delete;
     CoverCache& operator=(const CoverCache&) = delete;
 
-    // The game's cover file, empty if it has none.
+    // The game's cover file, empty if it has none. With box art on, a 3D
+    // picture of the game's box where there is one, else the flat cover.
     std::filesystem::path path_for(const GameEntry& game);
     // Covers were added or replaced: look them up again.
     void forget();
@@ -45,8 +46,8 @@ public:
     // calls `done` with it on the UI thread (not if it cannot be read).
     // Requests for another size than the last are dropped unless started.
     void request(const std::filesystem::path& file, int px, Done done);
-    // Pictures as flat covers or as 3D game cases (see box_art.hpp). A
-    // change drops the pictures made in the other style.
+    // Covers as flat pictures or, where ES-DE has scraped them, as 3D
+    // pictures of the game box. A change drops pictures found the other way.
     void set_box_art(bool on);
 
 private:

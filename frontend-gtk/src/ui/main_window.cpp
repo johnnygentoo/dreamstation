@@ -483,6 +483,9 @@ void MainWindow::build_ui() {
     m_view_title.set_title("DreamStation");
     m_view_title.set_stack(&m_views);
     m_header.set_title_widget(&m_view_title);
+    // Minimise, maximise and close are left to the desktop.
+    m_header.set_show_start_title_buttons(false);
+    m_header.set_show_end_title_buttons(false);
 
     // Helper: create a labeled menu button for the header bar
     const auto make_menu_btn = [](const char* label,

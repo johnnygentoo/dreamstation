@@ -79,7 +79,7 @@ struct Config {
         bool        merge_discs = true;     // one entry per multi-disc game
         bool        auto_covers = true;     // fetch missing covers after each scan
         bool        watch_dirs  = true;     // rescan when the game folders change
-        bool        box_covers  = false;    // grid covers drawn as 3D game cases
+        bool        box_covers  = true;      // grid as shelves of 3D boxes
         std::vector<std::string> cover_urls;  // cover downloader templates
     };
 

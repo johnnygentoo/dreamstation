@@ -1,0 +1,16 @@
+#!/bin/sh
+# Only main and tags leave this machine, and nothing in them may be a game,
+# firmware, save or box art (tools/check_no_roms.py).
+top=$(git rev-parse --show-toplevel)
+zero=0000000000000000000000000000000000000000
+while read local_ref local_sha remote_ref remote_sha; do
+    case "$local_ref" in
+        refs/heads/main|refs/tags/*) ;;
+        "(delete)") continue ;;
+        *) echo "pre-push: refusing to push $local_ref (only main and tags are public)" >&2; exit 1 ;;
+    esac
+    [ "$local_sha" = "$zero" ] && continue
+    if [ "$remote_sha" = "$zero" ]; then range="$local_sha"; else range="$remote_sha..$local_sha"; fi
+    python3 -I "$top/tools/check_no_roms.py" --push $range || exit 1
+done
+exit 0

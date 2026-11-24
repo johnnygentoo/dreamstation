@@ -901,9 +901,10 @@ void MainWindow::run_test_script() {
                 const auto dirs = cover_dirs();
                 for (const auto& g : m_library.games()) {
                     const auto cover = find_cover(g, dirs);
-                    std::fprintf(stderr, "cover-report: %s\t%s\t%s\t%s\n",
-                                 cover.empty() ? "MISSING" : "ok", g.system.c_str(),
-                                 g.title.c_str(), cover.c_str());
+                    const auto box = find_art(g, true);
+                    std::fprintf(stderr, "cover-report: %s\t%s\t%s\t%s\t%s\t%s\n",
+                                 cover.empty() ? "MISSING" : "ok", box.string().find("/3dboxes/") == std::string::npos ? "no-3d" : "3d",
+                                 g.system.c_str(), g.title.c_str(), cover.c_str(), box.c_str());
                 }
             } else if (step.rfind("netplay-host:", 0) == 0 || step.rfind("netplay-join:", 0) == 0) {
                 // netplay-host:<game> or netplay-join:<address>|<game>

@@ -10,6 +10,9 @@ namespace ds::frontend {
 
 namespace fs = std::filesystem;
 
+// Box art is cover-shaped: this much of the cover size wide and high.
+constexpr double kBoxWidth = 0.9, kBoxHeight = 1.25;
+
 // ── Covers ────────────────────────────────────────────────────────────────
 
 // Our own folder comes first; after that we reuse art other frontends on
@@ -48,6 +51,26 @@ static std::vector<fs::path> arcade_cover_dirs() {
             if (fs::is_directory(d, ec))
                 dirs.push_back(d);
         }
+    }
+    return dirs;
+}
+
+// Pictures of the whole game box in 3D that ES-DE has scraped, for the
+// Dreamcast or for the arcade boards. Laid out like its flat covers.
+static std::vector<fs::path> box_dirs(bool arcade) {
+    std::vector<fs::path> dirs;
+    if (const char* home = std::getenv("HOME")) {
+        const fs::path h(home);
+        std::vector<std::string> systems{"dreamcast"};
+        if (arcade)
+            systems = {"naomi", "naomi2", "atomiswave"};
+        for (const char* root : {"ES-DE", ".emulationstation"})
+            for (const auto& system : systems) {
+                const fs::path d = h / root / "downloaded_media" / system / "3dboxes";
+                std::error_code ec;
+                if (fs::is_directory(d, ec))
+                    dirs.push_back(d);
+            }
     }
     return dirs;
 }
@@ -228,10 +251,13 @@ std::string cover_title(const GameEntry& g) {
 // needed after start-up or forget_cover_index(). Covers we download ourselves
 // are found by file name before it comes to these.
 static std::optional<CoverIndex> g_dreamcast_index, g_arcade_index;
+static std::optional<CoverIndex> g_dreamcast_boxes, g_arcade_boxes;
 
 void forget_cover_index() {
     g_dreamcast_index.reset();
     g_arcade_index.reset();
+    g_dreamcast_boxes.reset();
+    g_arcade_boxes.reset();
 }
 
 static fs::path find_cover_by_title(const GameEntry& g, const std::vector<fs::path>& dirs) {
@@ -249,7 +275,8 @@ static fs::path find_cover_by_title(const GameEntry& g, const std::vector<fs::pa
 
 // Cover naming differs per source: by path relative to the ROM directory, by
 // the game's folder, by file name, by cleaned title or by product number.
-fs::path find_cover(const GameEntry& g, const std::vector<fs::path>& dirs) {
+// The image in `dirs` under one of those names, or empty.
+static fs::path find_by_file_name(const GameEntry& g, const std::vector<fs::path>& dirs) {
     std::error_code ec;
     // Most specific first. A generic file name ("disc") identifies nothing,
     // so it is never used on its own.
@@ -279,7 +306,34 @@ fs::path find_cover(const GameEntry& g, const std::vector<fs::path>& dirs) {
                 if (fs::is_regular_file(candidate, ec))
                     return candidate;
             }
+    return {};
+}
+
+fs::path find_cover(const GameEntry& g, const std::vector<fs::path>& dirs) {
+    if (fs::path file = find_by_file_name(g, dirs); !file.empty())
+        return file;
     return find_cover_by_title(g, dirs);
+}
+
+fs::path find_art(const GameEntry& g, bool box) {
+    static const auto covers = cover_dirs();
+    if (!box)
+        return find_cover(g, covers);
+    // Art named after this very dump first, 3D before flat: it is this
+    // game's own, where a match by title can be another region's. Only
+    // then the closest title, again 3D before flat.
+    static const std::vector<fs::path> dreamcast = box_dirs(false), arcade = box_dirs(true);
+    const auto& boxes = g.is_arcade() ? arcade : dreamcast;
+    if (fs::path file = find_by_file_name(g, boxes); !file.empty())
+        return file;
+    if (fs::path file = find_by_file_name(g, covers); !file.empty())
+        return file;
+    auto& index = g.is_arcade() ? g_arcade_boxes : g_dreamcast_boxes;
+    if (!index)
+        index = index_covers(boxes);
+    if (const int i = match_cover_name(cover_title(g), index->names, g.region, g.disc); i >= 0)
+        return index->files[static_cast<std::size_t>(i)];
+    return find_cover_by_title(g, covers);
 }
 
 namespace {
@@ -504,18 +558,30 @@ void LibraryPage::build_header() {
     m_scale.set_size_request(140, -1);
     m_scale.set_draw_value(false);
     m_scale.set_tooltip_text("Cover size (Ctrl + mouse wheel)");
+    // A drag passes through every size; only where it stops is worth building.
     m_scale.signal_value_changed().connect([this] {
         if (m_building) return;
-        m_config.library.cover_size = static_cast<int>(m_scale.get_value());
-        m_config.save();
-        if (m_config.library.view == "grid")
-            rebuild();
+        m_scale_settle.disconnect();
+        m_scale_settle = Glib::signal_timeout().connect([this] {
+            m_config.library.cover_size = static_cast<int>(m_scale.get_value());
+            m_config.save();
+            if (m_config.library.view == "grid")
+                rebuild();
+            return false;
+        }, 150);
     });
     m_header.append(m_scale);
 
     m_search_entry.set_hexpand(true);
     m_search_entry.set_placeholder_text("Search…");
     m_search_entry.signal_search_changed().connect([this] { if (!m_building) rebuild(); });
+    // Typing anywhere in the library starts a search; Esc clears it.
+    m_search_entry.set_key_capture_widget(*this);
+    m_search_entry.signal_stop_search().connect([this] {
+        m_search_entry.set_text("");
+        if (m_config.library.view == "list") m_columns.grab_focus();
+        else                                 m_flow.grab_focus();
+    });
     m_header.append(m_search_entry);
 
     m_count.add_css_class("dim-label");
@@ -617,7 +683,11 @@ std::pair<int, int> LibraryPage::covers_shown() const {
         ++tiles;
         const auto* flow_child = dynamic_cast<const Gtk::FlowBoxChild*>(child);
         const auto* tile = flow_child ? flow_child->get_child() : nullptr;
-        const auto* art = tile ? dynamic_cast<const Gtk::Stack*>(tile->get_first_child()) : nullptr;
+        // The art stack leads the tile, inside the slot's overlay with box art.
+        const Gtk::Widget* first = tile ? tile->get_first_child() : nullptr;
+        const auto* art = dynamic_cast<const Gtk::Stack*>(first);
+        for (auto* w = first ? first->get_first_child() : nullptr; w && !art; w = w->get_next_sibling())
+            art = dynamic_cast<const Gtk::Stack*>(w);
         if (art && art->get_visible_child_name() == "cover")
             ++shown;
     }
@@ -746,52 +816,106 @@ void LibraryPage::rebuild_grid(const std::vector<const GameEntry*>& games) {
     while (auto* child = m_flow.get_first_child())
         m_flow.remove(*child);
 
+    // With box art the games stand on shelves, as in Nepchun3D: boxes are
+    // cover-shaped, bottoms on a line that runs the width of the row.
+    const bool box  = m_config.library.box_covers;
     const int  size = std::clamp(m_config.library.cover_size, 120, 420);
-    const int  px   = size * std::max(1, get_scale_factor());
+    const int  art_w = box ? static_cast<int>(size * kBoxWidth) : size;
+    const int  art_h = box ? static_cast<int>(size * kBoxHeight) : size;
+    const int  px   = art_h * std::max(1, get_scale_factor());
     const unsigned generation = ++m_grid_generation;
-    m_covers.set_box_art(m_config.library.box_covers);
+    m_covers.set_box_art(box);
+    if (box) m_flow.add_css_class("ds-shelf-grid");
+    else     m_flow.remove_css_class("ds-shelf-grid");
+    m_flow.set_column_spacing(box ? 0 : 12);
+    m_flow.set_margin_start(box ? 0 : 16);      // shelves run to the window's edges
+    m_flow.set_margin_end(box ? 0 : 16);
+    m_flow.set_row_spacing(box ? 18 : 12);
 
     for (const GameEntry* gp : games) {
         const GameEntry& game = *gp;
         auto* tile = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 6);
-        tile->set_margin(4);
-        tile->add_css_class("ds-game-tile");
+        tile->set_margin(box ? 0 : 4);
+        tile->add_css_class(box ? "ds-box-tile" : "ds-game-tile");
         tile->set_tooltip_text(game.disc_title.empty()
             ? game.path.filename().string()
             : game.disc_title + "\n" + game.path.filename().string());
 
         // Cover art over a placeholder disc icon.
         auto* art = Gtk::make_managed<Gtk::Stack>();
-        art->set_size_request(size, size);
+        art->set_size_request(art_w, art_h);
         art->set_halign(Gtk::Align::CENTER);
+        art->set_valign(Gtk::Align::START);
         auto* placeholder = Gtk::make_managed<Gtk::Image>();
         placeholder->set_from_icon_name(game.is_arcade() ? "applications-games-symbolic"
                                                          : "media-optical-symbolic");
         placeholder->set_pixel_size(size / 2);
         placeholder->add_css_class("dim-label");
+        if (box) {
+            placeholder->set_valign(Gtk::Align::END);    // on the shelf too
+            placeholder->set_margin_bottom(8);
+        }
         auto* picture = Gtk::make_managed<Gtk::Picture>();
         picture->set_content_fit(Gtk::ContentFit::CONTAIN);
         picture->set_can_shrink(true);
-        picture->set_size_request(size, size);
         art->add(*placeholder, "placeholder");
-        art->add(*picture, "cover");
-        tile->append(*art);
+        // A box stands at the bottom of its space, framed exactly so the
+        // selection outline fits it; a flat cover is centred.
+        Gtk::AspectFrame* frame = nullptr;
+        if (box) {
+            frame = Gtk::make_managed<Gtk::AspectFrame>(0.5f, 1.0f, 0.75f, false);
+            frame->set_child(*picture);
+            picture->add_css_class("ds-box-art");
+            art->add(*frame, "cover");
+        } else {
+            picture->set_size_request(size, size);
+            art->add(*picture, "cover");
+        }
+        const auto show = [picture, art, frame](const Glib::RefPtr<Gdk::Texture>& texture) {
+            picture->set_paintable(texture);
+            if (frame && texture->get_height() > 0)
+                frame->set_ratio(static_cast<float>(texture->get_width()) / texture->get_height());
+            art->set_visible_child("cover");
+        };
+        if (box) {
+            // The slot is the same size whatever its art: the art lies over
+            // an empty box of that size, so a wide cover can't push the
+            // shelf out of line with the rest of the row.
+            auto* slot = Gtk::make_managed<Gtk::Overlay>();
+            auto* space = Gtk::make_managed<Gtk::Box>();
+            space->set_size_request(art_w, art_h);
+            slot->set_child(*space);
+            slot->add_overlay(*art);
+            slot->set_halign(Gtk::Align::CENTER);
+            slot->set_valign(Gtk::Align::START);
+            slot->set_overflow(Gtk::Overflow::VISIBLE);
+            tile->append(*slot);
+        } else {
+            tile->append(*art);
+        }
         if (const auto file = m_covers.path_for(game); !file.empty()) {
             // The picture made last time shows at once, even at another size,
             // while the right one is made.
             bool exact = false;
-            if (const auto texture = m_covers.lookup(file, px, exact)) {
-                picture->set_paintable(texture);
-                art->set_visible_child("cover");
-            }
+            if (const auto texture = m_covers.lookup(file, px, exact))
+                show(texture);
             if (!exact)
-                m_covers.request(file, px, [this, generation, picture, art](
+                m_covers.request(file, px, [this, generation, show](
                                                const Glib::RefPtr<Gdk::Texture>& texture) {
                     if (generation != m_grid_generation)
                         return;             // that tile is gone
-                    picture->set_paintable(texture);
-                    art->set_visible_child("cover");
+                    show(texture);
                 });
+        }
+
+        // Labels sit on the shelf in box mode.
+        Gtk::Box* labels = tile;
+        if (box) {
+            labels = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 6);
+            labels->add_css_class("ds-shelf");
+            labels->set_size_request(art_w + 12, -1);
+            labels->set_vexpand(true);      // rows are as tall as their tallest title
+            tile->append(*labels);
         }
 
         auto* lbl = Gtk::make_managed<Gtk::Label>(display_title(game));
@@ -802,12 +926,12 @@ void LibraryPage::rebuild_grid(const std::vector<const GameEntry*>& games) {
         lbl->set_ellipsize(Pango::EllipsizeMode::END);
         lbl->set_max_width_chars(std::max(12, size / 10));
         lbl->add_css_class("ds-game-title-label");
-        tile->append(*lbl);
+        labels->append(*lbl);
 
         auto* system = Gtk::make_managed<Gtk::Label>(game.system);
         system->set_css_classes({"ds-system-pill", system_css_class(game.system)});
         system->set_halign(Gtk::Align::CENTER);
-        tile->append(*system);
+        labels->append(*system);
 
         // Arcade sets have no region; their set name identifies the dump.
         std::string badge = game.is_arcade() ? game.product_id : region_name(game.region);
@@ -817,10 +941,11 @@ void LibraryPage::rebuild_grid(const std::vector<const GameEntry*>& games) {
             badge += " · " + std::to_string(discs) + " discs";
         auto* meta = Gtk::make_managed<Gtk::Label>(badge);
         meta->add_css_class("ds-game-meta-label");
-        tile->append(*meta);
+        labels->append(*meta);
 
         auto* child = Gtk::make_managed<Gtk::FlowBoxChild>();
-        child->set_halign(Gtk::Align::CENTER);
+        // Shelf tiles fill the row, so the shelf runs on unbroken.
+        child->set_halign(box ? Gtk::Align::FILL : Gtk::Align::CENTER);
         child->set_child(*tile);
         child->set_name(game.path.string());     // path for launch / menu
 

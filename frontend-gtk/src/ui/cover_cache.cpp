@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "cover_cache.hpp"
-#include "box_art.hpp"
 #include "../image_io.hpp"
 #include "library_page.hpp"
 #include "../config.hpp"
@@ -94,8 +93,7 @@ fs::path CoverCache::path_for(const GameEntry& game) {
     const std::string key = game.path.string();
     if (const auto it = m_paths.find(key); it != m_paths.end())
         return it->second;
-    static const auto dirs = cover_dirs();
-    return m_paths[key] = find_cover(game, dirs);
+    return m_paths[key] = find_art(game, m_box);
 }
 
 void CoverCache::forget() {
@@ -121,6 +119,7 @@ void CoverCache::set_box_art(bool on) {
     if (on == m_box)
         return;
     m_box = on;
+    forget();                           // box mode looks for other files
     m_textures.clear();
     m_waiting.clear();
     std::lock_guard lock(m_mutex);
@@ -173,15 +172,8 @@ void CoverCache::worker() {
 
 // Runs on a worker thread: the picture from disk, made first if need be.
 GdkPixbuf* CoverCache::make(const Job& job) const {
-    if (job.px > kThumbEdge) {
-        GdkPixbuf* p = image::load(job.file, job.px, job.px);
-        if (p && job.box) {
-            GdkPixbuf* box = render_box_art(p, job.px);
-            g_object_unref(p);
-            return box;
-        }
-        return p;
-    }
+    if (job.px > kThumbEdge)
+        return image::load(job.file, job.px, job.px);
     fs::file_time_type time;
     std::uintmax_t size = 0;
     if (!stat_file(job.file, time, size))
@@ -191,31 +183,7 @@ GdkPixbuf* CoverCache::make(const Job& job) const {
                   std::hash<std::string>{}(job.file.string() + '\n' +
                                            std::to_string(time.time_since_epoch().count()) + '\n' +
                                            std::to_string(size)));
-    if (!job.box)
-        return make_flat(job, name);
-
-    // The case is drawn once from the thumbnail and kept beside it. The
-    // suffix names the drawing's version, so a changed look redraws.
-    const fs::path boxed = m_dir / (std::string(name) + "-box1.png");
-    if (GdkPixbuf* p = image::load(boxed))
-        return fit(p, job.px);
-    Job flat_job = job;
-    flat_job.px = kThumbEdge;
-    GdkPixbuf* flat = make_flat(flat_job, name);
-    if (!flat)
-        return nullptr;
-    GdkPixbuf* box = render_box_art(flat, kThumbEdge);
-    g_object_unref(flat);
-    if (!box)
-        return nullptr;
-    fs::path part = boxed;
-    part += ".part";
-    std::error_code ec;
-    if (image::save_png(box, part))
-        fs::rename(part, boxed, ec);
-    else
-        fs::remove(part, ec);
-    return fit(box, job.px);
+    return make_flat(job, name);
 }
 
 // The flat thumbnail, from disk or made from the original.

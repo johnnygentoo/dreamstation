@@ -28,7 +28,6 @@ add_executable(dreamstation
     src/vmu_cpu.cpp
     src/ui/cover_downloader.cpp
     src/ui/cover_cache.cpp
-    src/ui/box_art.cpp
     src/ui/controllers_window.cpp
     src/ui/pause_menu.cpp
     src/ui/vmu_manager.cpp

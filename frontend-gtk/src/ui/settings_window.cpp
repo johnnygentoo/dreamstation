@@ -535,8 +535,9 @@ void SettingsWindow::build_game_list_page() {
         "server. The Cover Downloader in the Tools menu shows the progress.",
         m_config.library.auto_covers);
     add_switch(options, "3D Box Covers",
-        "Show covers in the game grid as game cases standing at an angle, drawn from the "
-        "covers you have (also in the View menu).", m_config.library.box_covers);
+        "Show the game grid as shelves of game boxes in 3D, from the 3D box pictures ES-DE "
+        "has scraped. Games without one show their flat cover (also in the View menu).",
+        m_config.library.box_covers);
     rebuild_game_dirs();
 }
 

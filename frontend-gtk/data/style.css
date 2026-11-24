@@ -310,6 +310,43 @@ flowboxchild:selected .ds-game-tile {
     box-shadow:       0 0 0 2px #15F4EE44;
 }
 
+/* Box art: games standing on shelves that run the width of each row */
+flowbox.ds-shelf-grid > flowboxchild,
+flowbox.ds-shelf-grid > flowboxchild:hover,
+flowbox.ds-shelf-grid > flowboxchild:selected {
+    margin:           0;
+    padding:          0;
+    border-radius:    0;
+    background:       none;
+    box-shadow:       none;
+    outline:          none;
+}
+
+.ds-box-tile {
+    padding-top: 12px;
+}
+
+.ds-box-art {
+    border-radius:  4px;
+    outline:        2px solid transparent;
+    outline-offset: 3px;
+    transition:     outline-color 150ms ease;
+}
+
+flowboxchild:hover .ds-box-art {
+    outline-color: #15F4EE66;
+}
+
+flowboxchild:selected .ds-box-art {
+    outline-color: #15F4EE;
+}
+
+.ds-shelf {
+    border-top:       2px solid #15F4EE77;
+    background-image: linear-gradient(to bottom, #0B1520, alpha(#0B1520, 0));
+    padding:          2px 6px 8px 6px;
+}
+
 /* Unsupported / greyed-out tiles */
 .ds-game-tile.unsupported {
     opacity: 0.45;
